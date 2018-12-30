@@ -1,0 +1,10 @@
+# Development #
+$ docker-compose build
+$ docker-compose up
+
+# Build and push #
+$ docker build -t 192.168.1.15:5000/pictiato .
+$ docker push 192.168.1.15:5000/pictiato
+
+# Create DB #
+$ docker exec * python /usr/src/app/create.py

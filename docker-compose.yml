@@ -1,0 +1,22 @@
+version: "3"
+services:
+    pictiato:
+        build: .
+        env_file: .env
+        ports:
+            - 80:5000
+        depends_on:
+            - db
+        volumes:
+            - ./app:/usr/src/app
+            - ./data/images:/bucket
+    db:
+        image: mariadb
+        env_file: .env
+        volumes:
+            - ./data/db:/data/db
+    adminer:
+        image: adminer
+        restart: always
+        ports:
+            - 8080:8080

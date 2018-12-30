@@ -1,0 +1,6 @@
+Flask
+Flask-SQLAlchemy
+sqlalchemy
+pytest
+pymysql
+Pillow
