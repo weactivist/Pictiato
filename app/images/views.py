@@ -83,14 +83,6 @@ def get_file(files):
     return filename + '.webp', file.content_type, file.stream
 
 
-@mod.route('/<domain>', methods=['GET'])
-def missing(domain):
-    return jsonify({
-        'status': 404,
-        'message': 'This route is missing. Use POST request.'
-    }), 404
-
-
 @mod.route('/<domain>', methods=['POST'])
 def upload(domain):
     """

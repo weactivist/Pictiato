@@ -13,5 +13,5 @@ settings = {
 }
 
 sites = {
-    'b08daaf0a631344a5a63dbb536bce0a71077b08a': 'fishd.club'
+    'b08daaf0a631344a5a63dbb536bce0a71077b08a': 'mydomain.com'
 }
