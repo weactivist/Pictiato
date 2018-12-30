@@ -1,4 +1,9 @@
+This is intended to use as server-to-server image upload. Image files uploaded are converted to WEBP format and resizing is supported with some predefined sizes.
+
 # Development
+1. Copy .env-example to .env and make changes.
+2. Add your domains that should be able to upload images to app/config.py
+
 ```
 $ docker-compose build
 $ docker-compose up
@@ -23,4 +28,11 @@ $ docker build -t pictiato .
 # Create DB
 ```
 $ docker exec CONTAINER_ID python /usr/src/app/create.py
+```
+
+# Example
+Files are sent as multipart/form-data. Example below in Python.
+```
+import requests
+requests.post('http://localhost/<domain>', files=dict(file=('myfile.jpeg', open('myfile.jpeg', 'rb'))))
 ```
