@@ -34,5 +34,5 @@ $ docker exec CONTAINER_ID python /usr/src/app/create.py
 Files are sent as multipart/form-data. Example below in Python.
 ```
 import requests
-requests.post('http://localhost/<domain>', files=dict(file=('myfile.jpeg', open('myfile.jpeg', 'rb'))))
+requests.post('http://localhost/<domain>', files=dict(file=('myfile.jpeg', open('myfile.jpeg', 'rb'))), headers={'x-pictiato-secret': ''})
 ```
