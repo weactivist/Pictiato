@@ -14,6 +14,7 @@ settings = {
     'uri': os.getenv('URI', 'http://localhost/')
 }
 
-sites = {
-    'b08daaf0a631344a5a63dbb536bce0a71077b08a': 'mydomain.com'
-}
+sites = {}
+
+for k, v in [i.split(':') for i in os.getenv('SITES').split(' ')]:
+    sites[k] = v

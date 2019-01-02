@@ -1,6 +1,7 @@
 version: "3"
 services:
     pictiato:
+        image: pictiato
         build: .
         env_file: .env
         ports:
