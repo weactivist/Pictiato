@@ -7,6 +7,7 @@ services:
             - 80:5000
         depends_on:
             - db
+            - redis
         volumes:
             - ./app:/usr/src/app
             - ./data/images:/bucket
@@ -15,6 +16,9 @@ services:
         env_file: .env
         volumes:
             - ./data/db:/data/db
+    redis:
+        image: redis:alpine
+
     adminer:
         image: adminer
         restart: always

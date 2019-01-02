@@ -4,3 +4,5 @@ sqlalchemy
 pytest
 pymysql
 Pillow
+flask-redis
+Flask-Caching

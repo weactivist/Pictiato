@@ -1,4 +1,4 @@
-This is intended to use as server-to-server image upload. Image files uploaded are converted to WEBP format and resizing is supported with some predefined sizes.
+This is intended to use as server-to-server image upload. Image files uploaded are converted to WEBP format and resizing is supported with some predefined sizes. Caching of image requests is handled by Redis.
 
 # Development
 1. Copy .env-example to .env and make changes.
@@ -14,7 +14,7 @@ $ docker-compose up
 ### Pictiato
 - GET: http://localhost/
 - GET|POST: http://localhost/\<domain\>
-- GET: http://localhost/i/\<domain\>/\<id\>/\<file\>?size=xs|sm|md|lg
+- GET: http://localhost/\<domain\>/\<id\>/\<file\>?size=xs|sm|md|lg
 
 
 ### Adminer
@@ -31,7 +31,7 @@ $ docker exec CONTAINER_ID python /usr/src/app/create.py
 ```
 
 # Example
-Files are sent as multipart/form-data. Example below in Python.
+Files are uploaded as multipart/form-data. Example below in Python.
 ```
 import requests
 requests.post('http://localhost/<domain>', files=dict(file=('myfile.jpeg', open('myfile.jpeg', 'rb'))), headers={'x-pictiato-secret': ''})

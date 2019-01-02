@@ -1,9 +1,10 @@
 from flask import Blueprint, jsonify, request, send_file, make_response
 from datetime import datetime
 from app.images.models import Image
-from app import db, config
-import base64, os, re, io, sys
+from app import db, config, cache
+import os, io
 from PIL import Image as PILImage
+from functools import wraps
 
 mod = Blueprint('images', __name__)
 
@@ -81,6 +82,28 @@ def get_file(files):
     filename, file_extension = os.path.splitext(file.filename)
 
     return filename + '.webp', file.content_type, file.stream
+
+
+# One week
+DEFAULT_CACHE_TIMEOUT = 604800
+
+
+def cache_timeout(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        image = Image.query.filter_by(id=kwargs.get('id')).first()
+
+        cache_timeout = DEFAULT_CACHE_TIMEOUT
+
+        if image.expires:
+            cache_timeout = (image.expires - datetime.now()).seconds
+
+        if cache_timeout < 0:
+            cache_timeout = DEFAULT_CACHE_TIMEOUT
+
+        f.cache_timeout = cache_timeout
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 @mod.route('/<domain>', methods=['POST'])
@@ -180,7 +203,9 @@ def list_images(domain):
     return jsonify(response)
 
 
-@mod.route('/i/<domain>/<id>/<file>', methods=['GET'])
+@mod.route('/<domain>/<id>/<file>', methods=['GET'])
+@cache_timeout
+@cache.cached(query_string=True)
 def view_image(domain, id, file):
     def get_temp_file(pil_image):
         img_io = io.BytesIO()
@@ -205,12 +230,18 @@ def view_image(domain, id, file):
 
     size = request.args.get('size')
 
-    cache_timeout = None
+    cache_timeout = DEFAULT_CACHE_TIMEOUT
 
     if image.expires:
         cache_timeout = (image.expires - datetime.now()).seconds
 
-    pil_image = PILImage.open(image.get_path())
+    try:
+        pil_image = PILImage.open(image.get_path())
+    except FileNotFoundError:
+        return jsonify({
+            'status': 404,
+            'message': 'No image found.'
+        }), 404
 
     if size in sizes:
         pil_image.thumbnail(sizes.get(size))

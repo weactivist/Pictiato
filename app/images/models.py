@@ -27,7 +27,7 @@ class Image(db.Model):
             'created': self.created,
             'content_length': self.content_length,
             'expires': self.expires,
-            'uri': '%si/%s/%s/%s' % (
+            'uri': '%s%s/%s/%s' % (
                 config.settings.get('uri'),
                 self.domain,
                 self.id,
