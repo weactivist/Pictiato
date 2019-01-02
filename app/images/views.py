@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request, send_file, make_response
 from datetime import datetime
 from app.images.models import Image
 from app import db, config, cache
-import os, io
+import os, io, time
 from PIL import Image as PILImage
 from functools import wraps
 
@@ -17,11 +17,40 @@ content_types = {
 }
 
 sizes = {
+    'thumbnail': (100, 100),
     'xs': (576, 576),
     'sm': (768, 768),
     'ms': (992, 992),
     'lg': (1200, 1200)
 }
+
+
+class _Image(PILImage.Image):
+
+    def crop_to_aspect(self, aspect, divisor=1, alignx=0.5, aligny=0.5):
+        """Crops an image to a given aspect ratio.
+        Args:
+            aspect (float): The desired aspect ratio.
+            divisor (float): Optional divisor. Allows passing in (w, h) pair as the first two arguments.
+            alignx (float): Horizontal crop alignment from 0 (left) to 1 (right)
+            aligny (float): Vertical crop alignment from 0 (left) to 1 (right)
+        Returns:
+            Image: The cropped Image object.
+        """
+        if self.width / self.height > aspect / divisor:
+            newwidth = int(self.height * (aspect / divisor))
+            newheight = self.height
+        else:
+            newwidth = self.width
+            newheight = int(self.width / (aspect / divisor))
+        img = self.crop((alignx * (self.width - newwidth),
+                         aligny * (self.height - newheight),
+                         alignx * (self.width - newwidth) + newwidth,
+                         aligny * (self.height - newheight) + newheight))
+        return img
+
+
+PILImage.Image.crop_to_aspect = _Image.crop_to_aspect
 
 
 def get_content_md5(headers):
@@ -81,7 +110,7 @@ def get_file(files):
 
     filename, file_extension = os.path.splitext(file.filename)
 
-    return filename + '.webp', file.content_type, file.stream
+    return filename + '-' + str(time.time()) + '.webp', file.content_type, file.stream
 
 
 # One week
@@ -229,6 +258,7 @@ def view_image(domain, id, file):
         }), 404
 
     size = request.args.get('size')
+    crop = bool(request.args.get('crop'))
 
     cache_timeout = DEFAULT_CACHE_TIMEOUT
 
@@ -242,6 +272,9 @@ def view_image(domain, id, file):
             'status': 404,
             'message': 'No image found.'
         }), 404
+
+    if crop:
+        pil_image = pil_image.crop_to_aspect(sizes.get(size)[0], sizes.get(size)[1])
 
     if size in sizes:
         pil_image.thumbnail(sizes.get(size))
