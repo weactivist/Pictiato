@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request, send_file, make_response
 from datetime import datetime
 from app.images.models import Image
 from app import db, config, cache
-import os, io, time
+import os, io, time, hashlib
 from PIL import Image as PILImage
 from functools import wraps
 
@@ -121,6 +121,9 @@ def cache_timeout(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         image = Image.query.filter_by(id=kwargs.get('id')).first()
+
+        if not image:
+            return f(*args, **kwargs)
 
         cache_timeout = DEFAULT_CACHE_TIMEOUT
 
@@ -287,3 +290,57 @@ def view_image(domain, id, file):
         response.headers['Expires'] = image.expires.strftime('%a, %d %b %Y %H:%M:%S GMT')
 
     return response
+
+
+@mod.route('/<domain>/<id>/<file>', methods=['DELETE'])
+def delete(domain, id, file):
+    def _make_cache_key_query_string(args):
+        args_as_sorted_tuple = tuple()
+
+        if args:
+            args_as_sorted_tuple = tuple(
+                sorted(
+                    (pair for pair in args.items())
+                )
+            )
+
+        args_as_bytes = str(args_as_sorted_tuple).encode()
+        hashed_args = str(hashlib.md5(args_as_bytes).hexdigest())
+        cache_key = request.path + hashed_args
+
+        return cache_key
+
+    if domain not in config.sites.values():
+        return jsonify({
+            'status': 400,
+            'message': 'Domain is not available.'
+        }), 400
+
+    secret = get_secret(request.headers)
+
+    if config.sites.get(secret) != domain:
+        return jsonify({
+            'status': 400,
+            'message': 'You do not have access to this domain.'
+        }), 400
+
+    image = Image.query.filter_by(domain=domain).filter_by(id=id).filter_by(filename=file).first()
+
+    if not image:
+        return jsonify({
+            'status': 404,
+            'message': 'No image found.'
+        }), 404
+
+    os.remove(image.get_path())
+
+    db.session.delete(image)
+    db.session.commit()
+
+    for size in sizes:
+        cache.delete(_make_cache_key_query_string({'size': size}))
+        cache.delete(_make_cache_key_query_string({'size': size, 'crop': 'true'}))
+
+    cache.delete(_make_cache_key_query_string(dict()))
+
+    return jsonify({"msg": "OK"}), 200

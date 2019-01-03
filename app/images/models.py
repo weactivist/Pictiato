@@ -4,7 +4,7 @@ from datetime import datetime
 
 class Image(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    filename = db.Column(db.String(128), nullable=False, default='')
+    filename = db.Column(db.String(255), nullable=False, default='')
     domain = db.Column(db.String(128), nullable=False, default='')
     content_length = db.Column(db.Integer, nullable=False, default='')
     expires = db.Column(db.DateTime, nullable=True, default=None)

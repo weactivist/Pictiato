@@ -17,6 +17,7 @@ $ docker-compose up
     - Parameters:
         - size: xs|sm|md|lg
         - crop: true
+- DELETE: http://localhost/\<domain\>/\<id\>/\<file\>
 
 
 ### Adminer
