@@ -9,13 +9,6 @@ from functools import wraps
 mod = Blueprint('images', __name__)
 
 
-content_types = {
-    'image/gif': '.gif',
-    'image/jpeg': '.jpeg',
-    'image/png': '.png',
-    'image/webp': '.webp'
-}
-
 sizes = {
     'thumbnail': (100, 100),
     'xs': (576, 576),
