@@ -103,7 +103,7 @@ def get_file(files):
 
     filename, file_extension = os.path.splitext(file.filename)
 
-    return filename + '-' + str(time.time()) + '.webp', file.content_type, file.stream
+    return filename + '-' + str(time.time()) + '.png', file.content_type, file.stream
 
 
 # One week
@@ -277,7 +277,7 @@ def view_image(domain, id, file):
 
     temp_file = get_temp_file(pil_image)
 
-    response = make_response(send_file(temp_file, mimetype='image/webp', cache_timeout=cache_timeout))
+    response = make_response(send_file(temp_file, mimetype='image/png', cache_timeout=cache_timeout))
 
     if image.expires:
         response.headers['Expires'] = image.expires.strftime('%a, %d %b %Y %H:%M:%S GMT')
