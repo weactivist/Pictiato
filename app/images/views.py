@@ -192,7 +192,7 @@ def upload(domain):
 
     try:
         pil_image = PILImage.open(body)
-        pil_image.save(path + filename, 'WEBP')
+        pil_image.save(path + filename, 'PNG')
     except IOError:
         return jsonify({
             'status': 400,
@@ -234,7 +234,7 @@ def list_images(domain):
 def view_image(domain, id, file):
     def get_temp_file(pil_image):
         img_io = io.BytesIO()
-        pil_image.save(img_io, 'WEBP')
+        pil_image.save(img_io, 'PNG')
         img_io.seek(0)
 
         return img_io
